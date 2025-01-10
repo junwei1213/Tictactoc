@@ -37,18 +37,19 @@ function handleClick(event) {
   board[index] = currentPlayer;
 
   if (checkWin(currentPlayer)) {
-    alert(`${currentPlayer} wins!`);
-    resetGame();
+    showWinningMessage(currentPlayer);
   } else if (board.every((cell) => cell !== "")) {
-    alert("Draw!");
-    resetGame();
+    const winningMessage = document.getElementById("winner");
+    winningMessage.textContent = "It's a draw!";
+    winningMessage.style.display = "block";
   } else {
-    // Switch players
-    currentPlayer = currentPlayer === "X" ? "O" : "X";
-    playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
-
-    if (isAI && currentPlayer === 'O') {
+    if (isAI) {
+      currentPlayer = "X";
+      playerTurnElement.textContent = `Current Player: AI`;
         setTimeout(makeAIMove, 1000);
+    } else {
+      currentPlayer = currentPlayer === "X" ? "O" : "X";
+      playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
     }
   }
 }
@@ -68,6 +69,11 @@ function resetGame() {
     cell.addEventListener("click", handleClick, { once: true });
   });
   currentPlayer = "X";
+  playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
+  const winningMessage = document.getElementById("winner");
+  winningMessage.style.display = "none";
+  winningMessage.textContent = "";
+  
 }
 
 function makeAIMove() {
@@ -82,14 +88,20 @@ function makeAIMove() {
     const aiMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
     board[aiMove] = 'O';
     cells[aiMove].textContent = 'O';
+    cell.removeEventListener('click', handleClick);
 
     //Check for a win or draw after ai move
     if(checkWin('O')) {
-        alert('O wins!');
-        resetGame();
+        showWinningMessage('AI');
     } else {
         currentPlayer = 'X';
         playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
     }
 
+}
+
+function showWinningMessage(player) {
+  const winningMessage = document.getElementById("winner");
+  winningMessage.textContent = `Player ${player} wins!`;
+  winningMessage.style.display = "block";
 }
