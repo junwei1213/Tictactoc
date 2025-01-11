@@ -15,9 +15,6 @@ const winningCombinations = [
   [3, 4, 5],
   [6, 7, 8]
 ];
-cells.forEach((cell) => {
-  cell.addEventListener("click", handleClick, { once: true });
-});
 
 restartBtn.addEventListener("click", resetGame);
 
@@ -29,7 +26,6 @@ aiBtn.addEventListener("click", () => {
 
 function handleClick(event) {
   const cell = event.target;
-  console.log(cell);
   const index = cell.dataset.index;
 
   // Place the mark (X or O)
@@ -38,42 +34,22 @@ function handleClick(event) {
 
   if (checkWin(currentPlayer)) {
     showWinningMessage(currentPlayer);
+    disableAllCells(); // Disable all cells after a win
   } else if (board.every((cell) => cell !== "")) {
-    const winningMessage = document.getElementById("winner");
+    const winningMessage = document.getElementById("winning-message");
     winningMessage.textContent = "It's a draw!";
-    winningMessage.style.display = "block";
+    document.getElementById("winner").style.display = "block";
+    disableAllCells(); // Disable all cells after a draw
   } else {
     if (isAI) {
       currentPlayer = "X";
       playerTurnElement.textContent = `Current Player: AI`;
-        setTimeout(makeAIMove, 1000);
+      setTimeout(makeAIMove, 1000);
     } else {
       currentPlayer = currentPlayer === "X" ? "O" : "X";
       playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
     }
   }
-}
-
-function checkWin(player) {
-    return winningCombinations.find(combination => {
-        return combination.every(index => {
-            return board[index] === player;
-        });
-    });
-}
-
-function resetGame() {
-  board = ["", "", "", "", "", "", "", "", ""];
-  cells.forEach((cell) => {
-    cell.textContent = "";
-    cell.addEventListener("click", handleClick, { once: true });
-  });
-  currentPlayer = "X";
-  playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
-  const winningMessage = document.getElementById("winner");
-  winningMessage.style.display = "none";
-  winningMessage.textContent = "";
-  
 }
 
 function makeAIMove() {
@@ -87,21 +63,53 @@ function makeAIMove() {
     // Random AI move
     const aiMove = emptyCells[Math.floor(Math.random() * emptyCells.length)];
     board[aiMove] = 'O';
+    const cell = cells[aiMove];
     cells[aiMove].textContent = 'O';
     cell.removeEventListener('click', handleClick);
 
     //Check for a win or draw after ai move
-    if(checkWin('O')) {
-        showWinningMessage('AI');
+    if (checkWin('O')) {
+      showWinningMessage('O');
+      disableAllCells(); // Disable all cells after a win
+    } else if (board.every((cell) => cell !== "")) {
+      showWinningMessage("Draw");
+      disableAllCells(); // Disable all cells after a draw
     } else {
-        currentPlayer = 'X';
-        playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
+      currentPlayer = 'X';
+      playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
     }
 
 }
 
+function checkWin(player) {
+  return winningCombinations.find(combination => {
+      return combination.every(index => {
+          return board[index] === player;
+      });
+  });
+}
+
+function resetGame() {
+board = ["", "", "", "", "", "", "", "", ""];
+cells.forEach((cell) => {
+  cell.textContent = "";
+  cell.addEventListener("click", handleClick, { once: true });
+});
+currentPlayer = "X";
+playerTurnElement.textContent = `Current Player: ${currentPlayer}`;
+const winningMessage = document.getElementById("winner");
+winningMessage.style.display = "none";
+winningMessage.textContent = "";
+}
+
+function disableAllCells() {
+cells.forEach((cell) => {
+  cell.removeEventListener("click", handleClick);
+});
+}
+
 function showWinningMessage(player) {
-  const winningMessage = document.getElementById("winner");
-  winningMessage.textContent = `Player ${player} wins!`;
-  winningMessage.style.display = "block";
+const winningMessage = document.getElementById("winner");
+winningMessage.textContent = `Player ${player} wins!`;
+winningMessage.style.display = "block";
 }
